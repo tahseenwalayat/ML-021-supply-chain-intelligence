@@ -1,0 +1,50 @@
+[
+  {
+    "timestamp": "2026-08-07 11:24:46",
+    "model_id": "lightgbm_sku_region",
+    "latency_ms": 18.4,
+    "sample_count": 3,
+    "schema_violation_count": 1,
+    "schema_violations": [
+      {
+        "type": "NULL_VALUES_DETECTED",
+        "column": "feat1",
+        "null_count": 1,
+        "null_percentage": 33.33
+      }
+    ],
+    "prediction_stats": {
+      "count": 3,
+      "min": 12.5,
+      "max": 31.8,
+      "mean": 22.1333,
+      "std": 7.8792,
+      "median": 22.1,
+      "zero_count": 0
+    }
+  },
+  {
+    "timestamp": "2026-08-07 12:00:34",
+    "model_id": "lightgbm_sku_region",
+    "latency_ms": 18.4,
+    "sample_count": 3,
+    "schema_violation_count": 1,
+    "schema_violations": [
+      {
+        "type": "NULL_VALUES_DETECTED",
+        "column": "feat1",
+        "null_count": 1,
+        "null_percentage": 33.33
+      }
+    ],
+    "prediction_stats": {
+      "count": 3,
+      "min": 12.5,
+      "max": 31.8,
+      "mean": 22.1333,
+      "std": 7.8792,
+      "median": 22.1,
+      "zero_count": 0
+    }
+  }
+]

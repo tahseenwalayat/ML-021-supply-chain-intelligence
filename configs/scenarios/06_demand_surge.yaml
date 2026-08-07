@@ -1,0 +1,7 @@
+scenario_name: "Macroeconomic Demand Surge Shock"
+scenario_type: "demand_surge"
+horizon_days: 30
+affected_entities:
+  all_warehouses: true
+parameters:
+  demand_surge_multiplier: 1.50

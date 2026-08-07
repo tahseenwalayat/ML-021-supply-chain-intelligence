@@ -1,0 +1,8 @@
+scenario_name: "Unit Price Increase with Elasticity Adjustment"
+scenario_type: "price_increase"
+horizon_days: 30
+affected_entities:
+  all_products: true
+parameters:
+  price_change_pct: 15.0
+  price_elasticity: -1.2

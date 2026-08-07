@@ -1,0 +1,40 @@
+# Data files (Exclude raw and interim data except .gitkeep)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Secrets and environment configurations
+.env
+.env.local
+*.env
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Machine Learning Models and Artifacts
+models/*.pkl
+models/*.joblib
+models/*.pt
+models/*.onnx
+*.pkl
+mlruns/
+mlflow.db
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# IDE and OS settings
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

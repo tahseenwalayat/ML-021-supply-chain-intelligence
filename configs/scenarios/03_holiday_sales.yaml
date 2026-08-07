@@ -1,0 +1,7 @@
+scenario_name: "Holiday Cyber Week Peak Demand Spike"
+scenario_type: "holiday_sales"
+horizon_days: 30
+affected_entities:
+  category: "Electronics"
+parameters:
+  demand_multiplier: 1.75

@@ -1,0 +1,99 @@
+{
+  "models": {
+    "test_model_sku": {},
+    "lightgbm_sku_region": {
+      "Production": {
+        "model_name": "lightgbm_sku_region",
+        "version": "20260807_113201",
+        "stage": "Production",
+        "promoted_at": "2026-08-07 11:32:01",
+        "reason": "Candidate model v20260807_113201 WMAPE (91.59%) outperformed Production model vbaseline_naive WMAPE (100.00%) on holdout validation set.",
+        "metrics": {
+          "wmape": 91.59262867202094,
+          "naive_wmape": 100.0
+        }
+      },
+      "Staging": {
+        "model_name": "lightgbm_sku_region",
+        "version": "20260807_121449",
+        "stage": "Staging",
+        "promoted_at": "2026-08-07 12:14:49",
+        "reason": "REJECTED: Candidate model v20260807_121449 WMAPE (91.59%) did NOT outperform Current Production model v20260807_113201 WMAPE (91.59%).",
+        "metrics": {
+          "wmape": 91.59262867202094,
+          "naive_wmape": 100.0
+        }
+      }
+    }
+  },
+  "audit_history": [
+    {
+      "timestamp": "2026-08-07 11:24:45",
+      "event": "PROMOTE",
+      "model_name": "test_model_sku",
+      "version": "20260807_test",
+      "from_stage": "Staging",
+      "to_stage": "Production",
+      "reason": "Test candidate WMAPE 10.2% outperformed baseline 18.5%",
+      "metrics": {
+        "wmape": 10.2
+      }
+    },
+    {
+      "timestamp": "2026-08-07 11:24:46",
+      "event": "DEMOTE",
+      "model_name": "test_model_sku",
+      "version": "20260807_test",
+      "from_stage": "Production",
+      "to_stage": "Staging",
+      "reason": "Manual rollback test"
+    },
+    {
+      "timestamp": "2026-08-07 11:32:01",
+      "event": "PROMOTE",
+      "model_name": "lightgbm_sku_region",
+      "version": "20260807_113201",
+      "from_stage": "Staging",
+      "to_stage": "Production",
+      "reason": "Candidate model v20260807_113201 WMAPE (91.59%) outperformed Production model vbaseline_naive WMAPE (100.00%) on holdout validation set.",
+      "metrics": {
+        "wmape": 91.59262867202094,
+        "naive_wmape": 100.0
+      }
+    },
+    {
+      "timestamp": "2026-08-07 12:00:34",
+      "event": "PROMOTE",
+      "model_name": "test_model_sku",
+      "version": "20260807_test",
+      "from_stage": "Staging",
+      "to_stage": "Production",
+      "reason": "Test candidate WMAPE 10.2% outperformed baseline 18.5%",
+      "metrics": {
+        "wmape": 10.2
+      }
+    },
+    {
+      "timestamp": "2026-08-07 12:00:34",
+      "event": "DEMOTE",
+      "model_name": "test_model_sku",
+      "version": "20260807_test",
+      "from_stage": "Production",
+      "to_stage": "Staging",
+      "reason": "Manual rollback test"
+    },
+    {
+      "timestamp": "2026-08-07 12:14:49",
+      "event": "PROMOTE",
+      "model_name": "lightgbm_sku_region",
+      "version": "20260807_121449",
+      "from_stage": "Staging",
+      "to_stage": "Staging",
+      "reason": "REJECTED: Candidate model v20260807_121449 WMAPE (91.59%) did NOT outperform Current Production model v20260807_113201 WMAPE (91.59%).",
+      "metrics": {
+        "wmape": 91.59262867202094,
+        "naive_wmape": 100.0
+      }
+    }
+  ]
+}

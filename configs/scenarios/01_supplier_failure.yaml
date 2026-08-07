@@ -1,0 +1,8 @@
+scenario_name: "Supplier Failure & Severe Lead Time Spike"
+scenario_type: "supplier_failure"
+horizon_days: 30
+affected_entities:
+  supplier_id: "SUP_001"
+parameters:
+  delay_days: 14.0
+  lead_time_std_multiplier: 2.5

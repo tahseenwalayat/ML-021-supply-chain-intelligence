@@ -1,0 +1,10 @@
+scenario_name: "New Product Launch Cold-Start Ramp"
+scenario_type: "new_product_launch"
+horizon_days: 30
+affected_entities:
+  new_sku_id: "NEW_SKU_2026"
+  category: "Electronics"
+parameters:
+  initial_stock: 250.0
+  launch_ramp_days: 14
+  target_daily_demand: 15.0

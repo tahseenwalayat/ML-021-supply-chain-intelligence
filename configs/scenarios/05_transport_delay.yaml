@@ -1,0 +1,7 @@
+scenario_name: "Regional Transport Bottleneck & Delay"
+scenario_type: "transport_delay"
+horizon_days: 30
+affected_entities:
+  region: "North"
+parameters:
+  transit_delay_days: 6.0

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supply-chain-config
+  namespace: supply-chain
+data:
+  APP_NAME: "supply-chain-forecasting"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "supply_chain"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  MLFLOW_TRACKING_URI: "http://mlflow-service:5000"
+  API_BASE_URL: "http://api-service:8000"
