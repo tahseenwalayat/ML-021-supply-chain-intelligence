@@ -3,12 +3,24 @@ import requests
 import streamlit as st
 from typing import Dict, Any, List, Tuple, Optional
 
-# API_BASE_URL targets the FastAPI service (e.g. Render public URL or localhost for dev).
-API_BASE_URL = os.getenv(
+def _get_setting(key: str, default: str) -> str:
+    """Retrieve configuration setting from st.secrets or os.environ with fallback."""
+    try:
+        if hasattr(st, "secrets") and key in st.secrets:
+            val = st.secrets[key]
+            if val is not None and str(val).strip():
+                return str(val).strip()
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
+
+# API_BASE_URL targets the FastAPI service (e.g. Hugging Face Space URL or localhost:8000 for local dev).
+API_BASE_URL = _get_setting(
     "API_BASE_URL",
     f"http://{os.getenv('API_HOST', 'localhost')}:{os.getenv('API_PORT', '8000')}",
 ).rstrip("/")
-API_KEY = os.getenv("API_KEY", "sc-key-secret-2026")
+API_KEY = _get_setting("API_KEY", "sc-key-secret-2026")
 REQUEST_TIMEOUT = 10  # seconds
 
 

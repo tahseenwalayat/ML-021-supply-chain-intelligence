@@ -62,6 +62,7 @@ services:
     container_name: supply_chain_api_1
     restart: unless-stopped
     environment:
+      - PORT=8000
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
       - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
@@ -95,6 +96,7 @@ services:
     container_name: supply_chain_api_2
     restart: unless-stopped
     environment:
+      - PORT=8000
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
       - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
@@ -128,6 +130,7 @@ services:
     container_name: supply_chain_api_3
     restart: unless-stopped
     environment:
+      - PORT=8000
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
       - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}

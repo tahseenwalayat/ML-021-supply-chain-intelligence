@@ -57,6 +57,7 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
     environment:
+      - PORT=8000
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-supply_chain}

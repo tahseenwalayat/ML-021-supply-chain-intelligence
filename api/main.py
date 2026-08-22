@@ -16,11 +16,28 @@ app = FastAPI(
     version="1.0.0"
 )
 
-_cors_origins = os.getenv("CORS_ALLOW_ORIGINS", "*")
+_cors_origins = os.getenv("CORS_ALLOW_ORIGINS", "")
+if _cors_origins and _cors_origins.strip() == "*":
+    _allow_origins = ["*"]
+    _allow_origin_regex = None
+elif _cors_origins:
+    _allow_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+    _allow_origin_regex = r"https://.*\.streamlit\.app"
+else:
+    _allow_origins = [
+        "http://localhost:8501",
+        "http://localhost:8000",
+        "http://127.0.0.1:8501",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+    ]
+    _allow_origin_regex = r"https://.*\.streamlit\.app"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if _cors_origins == "*" else [o.strip() for o in _cors_origins.split(",") if o.strip()],
-    allow_credentials=False,
+    allow_origins=_allow_origins,
+    allow_origin_regex=_allow_origin_regex,
+    allow_credentials=True if _allow_origins != ["*"] else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -61,7 +78,7 @@ def health_check():
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("PORT", os.getenv("API_PORT", "8000")))
+    port = int(os.getenv("PORT", os.getenv("API_PORT", "7860")))
     uvicorn.run(
         "api.main:app",
         host=os.getenv("API_HOST", "0.0.0.0"),

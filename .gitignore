@@ -1,4 +1,4 @@
-﻿# Data files (Exclude raw and interim data except .gitkeep)
+# Data files (Exclude raw and interim data except .gitkeep)
 data/raw/*
 !data/raw/.gitkeep
 data/interim/*
@@ -10,6 +10,8 @@ data/processed/*
 .env
 .env.local
 *.env
+.streamlit/secrets.toml
+!.streamlit/secrets.toml.example
 
 # Python Bytecode and Cache
 __pycache__/
