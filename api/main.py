@@ -1,4 +1,7 @@
+import os
+
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from src.api.auth import verify_api_key
 from src.api.risk_router import router as risk_router
 from src.api.simulation_router import router as simulation_router
@@ -11,6 +14,15 @@ app = FastAPI(
     title="Enterprise Supply Chain Demand Forecasting & Risk Intelligence API",
     description="REST API service for Demand Forecasting, Inventory Optimization, 5D Risk Engine, Scenario Simulation, Alert Center, and MLOps",
     version="1.0.0"
+)
+
+_cors_origins = os.getenv("CORS_ALLOW_ORIGINS", "*")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if _cors_origins == "*" else [o.strip() for o in _cors_origins.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Keep /health public for orchestration probes. Every decisioning and data route
@@ -44,3 +56,15 @@ def health_check():
             "inventory_optimization"
         ]
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.getenv("PORT", os.getenv("API_PORT", "8000")))
+    uvicorn.run(
+        "api.main:app",
+        host=os.getenv("API_HOST", "0.0.0.0"),
+        port=port,
+        reload=os.getenv("ENVIRONMENT", "development").lower() == "development",
+    )

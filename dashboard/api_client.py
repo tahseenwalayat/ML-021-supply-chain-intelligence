@@ -3,8 +3,11 @@ import requests
 import streamlit as st
 from typing import Dict, Any, List, Tuple, Optional
 
-# Read environment variables with sensible defaults
-API_BASE_URL = os.getenv("API_BASE_URL", f"http://{os.getenv('API_HOST', 'localhost')}:{os.getenv('API_PORT', '8000')}").rstrip("/")
+# API_BASE_URL targets the FastAPI service (e.g. Render public URL or localhost for dev).
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    f"http://{os.getenv('API_HOST', 'localhost')}:{os.getenv('API_PORT', '8000')}",
+).rstrip("/")
 API_KEY = os.getenv("API_KEY", "sc-key-secret-2026")
 REQUEST_TIMEOUT = 10  # seconds
 

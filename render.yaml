@@ -1,0 +1,74 @@
+# Render Blueprint — deploy as two free-tier web services from one repo.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ml021-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.api
+    dockerCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_NAME
+        value: supply-chain-forecasting
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: POSTGRES_HOST
+        value: localhost
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        value: supply_chain
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_HOST
+        value: localhost
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_DB
+        value: "0"
+      - key: REDIS_URL
+        value: redis://localhost:6379/0
+      - key: MLFLOW_TRACKING_URI
+        value: http://localhost:5000
+      - key: MLFLOW_ARTIFACT_LOCATION
+        value: ./mlruns
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: "8000"
+      - key: API_KEY
+        generateValue: true
+      - key: CORS_ALLOW_ORIGINS
+        value: "*"
+
+  - type: web
+    name: ml021-dashboard
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.dashboard
+    dockerCommand: streamlit run dashboard/app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    envVars:
+      - key: APP_NAME
+        value: supply-chain-forecasting
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: API_BASE_URL
+        fromService:
+          name: ml021-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: API_KEY
+        fromService:
+          name: ml021-api
+          type: web
+          envVarKey: API_KEY
