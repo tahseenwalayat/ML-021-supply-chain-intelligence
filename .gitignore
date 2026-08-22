@@ -1,3 +1,6 @@
+# Raw Datasets
+Datasets/
+
 # Data files (Exclude raw and interim data except .gitkeep)
 data/raw/*
 !data/raw/.gitkeep
@@ -5,6 +8,7 @@ data/interim/*
 !data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/inventory_recommendations.parquet
 
 # Secrets and environment configurations
 .env
@@ -27,6 +31,7 @@ ENV/
 # Machine Learning Models and Artifacts
 models/*.pkl
 models/*.joblib
+!models/lightgbm_sku_region.joblib
 models/*.pt
 models/*.onnx
 *.pkl
