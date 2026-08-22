@@ -24,7 +24,8 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 def get_feature_and_target_cols(df: pd.DataFrame, level: str) -> Tuple[List[str], List[str], str]:
     """Identifies feature columns, categorical columns, and target column."""
-    target_col = "actual_sales"
+    # Forecast the following day, not the observed demand on the input row.
+    target_col = "target_next_day_sales"
     exclude_cols = {"date", "actual_sales", "target_next_day_sales"}
 
     cat_cols = []
@@ -177,7 +178,8 @@ def run_hyperparameter_search(
             "cat_cols": cat_cols,
             "level": level,
             "model_type": model_type,
-            "best_val_wmape": best_wmape
+            "best_val_wmape": best_wmape,
+            "target_col": target_col,
         }, model_path)
 
         mlflow.log_artifact(model_path)

@@ -4,13 +4,13 @@
 
 This report documents the empirical holdout evaluation, performance benchmarking, model explainability analysis, and MLflow Model Registry staging selection for the Enterprise Demand Forecasting Engine.
 
+> **Evaluation status - August 2026:** The historic numerical results in this report were produced before the feature-store target was corrected to `target_next_day_sales`. They must not be used for acceptance, promotion, or comparison. Re-run training and holdout evaluation before publishing replacement metrics.
+
 To evaluate model generalization and prevent temporal lookahead leakage, all candidate models—spanning **Tabular Gradient Boosted Decision Trees (LightGBM, XGBoost)** and **Univariate Trend Baselines (Prophet)**—were evaluated on a **strictly held-out 28-day time period** (`2018-08-07` to `2018-09-03`). This window was never used during model training, expanding-window cross-validation, or hyperparameter optimization.
 
-### Key Results Summary:
-- **Level 3 (Region-Total)**: **LightGBM** achieved top performance with a holdout **WMAPE of 25.49%**, outperforming XGBoost (40.00%) and Seasonal Naive (99.81%).
-- **Level 2 (Category-Region)**: **XGBoost** won with a holdout **WMAPE of 45.17%**, outperforming LightGBM (71.40%) and Seasonal Naive (99.98%).
-- **Level 1 (SKU-Region)**: **LightGBM** achieved a holdout **WMAPE of 93.67%**, beating XGBoost (101.55%) on high-variance granular demand series.
-- **MLflow Model Registry**: Winning models for each level have been registered in the MLflow Model Registry and assigned the active `staging` alias.
+### Current Results Summary:
+- **All hierarchy levels**: Pending retraining and target-aligned holdout evaluation.
+- **MLflow Model Registry**: Do not promote existing artifacts on the basis of the historic metrics below. New artifacts must declare `target_col=target_next_day_sales`.
 
 ---
 
@@ -38,7 +38,9 @@ Four core complementary metrics are computed across all models and hierarchy lev
 
 ---
 
-## 3. Holdout Evaluation Results & Model Comparison
+## 3. Historical Holdout Evaluation Results - Superseded
+
+The figures in this section are retained only as an audit record. They are not comparable with the current next-day forecasting pipeline and do not demonstrate the case-study WAPE target.
 
 ### 3.1 Overall Model Comparison Table
 
@@ -59,7 +61,7 @@ Four core complementary metrics are computed across all models and hierarchy lev
 
 ---
 
-## 4. Segment-Level Performance Analysis
+## 4. Historical Segment-Level Performance Analysis - Superseded
 
 Evaluating overall performance alone hides critical operational edge-case risks. Model performance was dissected across operational segments: **Overall**, **Cold-Start Products** ($\le 30$ days history), **Promotional Periods**, and **Holiday Periods**.
 
@@ -127,7 +129,7 @@ Local explanations analyze specific prediction scenarios to show how feature val
 
 ---
 
-## 6. Strengths, Weaknesses, and Model Selection Rationale
+## 6. Historical Strengths, Weaknesses, and Model Selection Rationale - Superseded
 
 ### 6.1 Model Architecture Comparison
 
@@ -144,7 +146,7 @@ Local explanations analyze specific prediction scenarios to show how feature val
 
 ---
 
-## 7. MLflow Model Registry Status
+## 7. Historical MLflow Model Registry Status - Superseded
 
 All three selected winning models have been registered in the MLflow Model Registry and tagged with the production-ready `staging` alias:
 

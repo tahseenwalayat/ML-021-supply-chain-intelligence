@@ -9,12 +9,9 @@ import plotly.graph_objects as go
 # Add parent directory to sys.path to import api_client
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Supply Chain KPI Overview",
-    page_icon="📊",
-    layout="wide"
-)
+configure_page("KPI overview", "📊")
 
 # Custom CSS styling
 st.markdown("""
@@ -54,6 +51,9 @@ st.markdown("""
 st.title("📊 Executive Supply Chain KPI Overview")
 st.caption("Consuming live REST API data from FastAPI backend")
 
+if not api_client.require_backend():
+    st.stop()
+
 # 1. Fetch live health & inventory aggregate data from API
 inv_health_res, error_health = api_client.get_inventory_health()
 wh_util_res, error_util = api_client.get_warehouse_utilization()
@@ -74,7 +74,7 @@ else:
     if not df_rec.empty:
         # Prepare payload for API
         items_payload = []
-        for idx, row in df_rec.iterrows():
+        for idx, row in df_rec.head(250).iterrows():
             items_payload.append({
                 "product_id": str(row.get("product_id", f"SKU-{idx}")),
                 "warehouse_id": str(row.get("warehouse_id", "WH-1")),
@@ -83,7 +83,7 @@ else:
                 "current_stock": float(row.get("current_stock", 50.0)),
                 "reorder_point": float(row.get("reorder_point", 100.0)),
                 "safety_stock": float(row.get("safety_stock", 30.0)),
-                "avg_daily_demand": float(row.get("avg_daily_demand", 10.0)),
+                "avg_daily_demand": float(row.get("allocated_daily_demand", 10.0)),
                 "avg_lead_time": float(row.get("avg_lead_time", 7.0)),
                 "lead_time_std_days": float(row.get("lead_time_std_days", 2.0)),
                 "supplier_reliability_score": float(row.get("supplier_reliability_score", 0.85)),
@@ -133,12 +133,12 @@ else:
         </div>
         """, unsafe_allow_html=True)
     with col4:
-        val_usd = summary.get("total_inventory_value_usd", 0.0)
+        total_on_hand = df_rec["current_stock"].sum()
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Total Capital</div>
-            <div class="metric-value">${val_usd/1e3:.1f}k</div>
-            <div class="metric-delta delta-amber">Tied-Up Working Capital</div>
+            <div class="metric-title">Total On-Hand Units</div>
+            <div class="metric-value">{total_on_hand:,.0f}</div>
+            <div class="metric-delta delta-amber">Cost data not supplied by API</div>
         </div>
         """, unsafe_allow_html=True)
     with col5:

@@ -14,6 +14,7 @@ from src.forecasting.dataset_split import (
     prepare_hierarchy_data,
     compute_seasonal_naive_baseline
 )
+from src.forecasting.evaluate import evaluate_model_file
 
 
 def test_metrics_calculation():
@@ -96,6 +97,40 @@ def test_hierarchy_data_preparation():
     assert reg_df["actual_sales"].iloc[0] == 20.0
 
 
+def test_evaluation_uses_artifact_target_label(tmp_path, monkeypatch):
+    """Forecast metrics must compare predictions with the training target."""
+    dates = pd.date_range(start="2023-01-01", periods=35, freq="D")
+    feature_df = pd.DataFrame({
+        "product_id": "P1",
+        "region": "US",
+        "date": dates,
+        "actual_sales": np.zeros(len(dates)),
+        "target_next_day_sales": np.ones(len(dates)) * 10.0,
+        "feat1": np.ones(len(dates)),
+    })
+    product_dim = pd.DataFrame({"product_id": ["P1"], "category": ["CatA"]})
+
+    class ConstantModel:
+        def predict(self, rows):
+            return np.ones(len(rows)) * 10.0
+
+    artifact_path = tmp_path / "lightgbm_sku_region.joblib"
+    artifact_path.touch()
+    monkeypatch.setattr(
+        "src.forecasting.evaluate.joblib.load",
+        lambda _: {
+            "model": ConstantModel(),
+            "feature_cols": ["product_id", "region", "feat1"],
+            "cat_cols": ["product_id", "region"],
+            "level": "sku_region",
+            "target_col": "target_next_day_sales",
+        },
+    )
+
+    result = evaluate_model_file(str(artifact_path), feature_df, product_dim)
+    assert result["overall_metrics"]["wmape"] == 0.0
+
+
 def test_train_lightgbm_level(tmp_path):
     pytest.importorskip("lightgbm")
     from src.forecasting.train_lightgbm import train_and_eval_lightgbm_level
@@ -106,6 +141,7 @@ def test_train_lightgbm_level(tmp_path):
         "region": "US",
         "date": dates,
         "actual_sales": np.random.uniform(10, 100, size=160),
+        "target_next_day_sales": np.random.uniform(10, 100, size=160),
         "feat1": np.random.uniform(0, 1, size=160),
         "feat2": np.random.uniform(0, 1, size=160)
     })
@@ -128,6 +164,7 @@ def test_train_xgboost_level(tmp_path):
         "region": "US",
         "date": dates,
         "actual_sales": np.random.uniform(10, 100, size=160),
+        "target_next_day_sales": np.random.uniform(10, 100, size=160),
         "feat1": np.random.uniform(0, 1, size=160),
         "feat2": np.random.uniform(0, 1, size=160)
     })
@@ -156,5 +193,3 @@ def test_train_prophet_series():
     assert res["series_id"] == "P1_US"
     assert "wmape" in res
     assert res["model"] is not None
-
-

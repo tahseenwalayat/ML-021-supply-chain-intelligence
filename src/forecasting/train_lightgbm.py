@@ -34,7 +34,9 @@ DEFAULT_LGBM_PARAMS = {
 
 def get_feature_and_target_cols(df: pd.DataFrame, level: str) -> Tuple[List[str], List[str], str]:
     """Identifies feature columns, categorical columns, and target column."""
-    target_col = "actual_sales"
+    # The feature row at date t predicts demand at t + 1.  Using actual_sales
+    # here would train on the same day's observed demand rather than a forecast.
+    target_col = "target_next_day_sales"
     exclude_cols = {"date", "actual_sales", "target_next_day_sales"}
     
     cat_cols = []
@@ -169,7 +171,8 @@ def train_and_eval_lightgbm_level(
             "level": level,
             "params": params,
             "wmape": avg_wmape,
-            "naive_wmape": avg_naive_wmape
+            "naive_wmape": avg_naive_wmape,
+            "target_col": target_col,
         }, model_path)
         
         mlflow.log_artifact(model_path)

@@ -64,7 +64,7 @@ services:
     environment:
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
-      - API_KEY=${API_KEY:-sc-key-secret-2026}
+      - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-supply_chain_prod}
@@ -97,7 +97,7 @@ services:
     environment:
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
-      - API_KEY=${API_KEY:-sc-key-secret-2026}
+      - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-supply_chain_prod}
@@ -130,7 +130,7 @@ services:
     environment:
       - APP_NAME=${APP_NAME:-supply-chain-forecasting}
       - ENVIRONMENT=production
-      - API_KEY=${API_KEY:-sc-key-secret-2026}
+      - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-supply_chain_prod}
@@ -166,7 +166,7 @@ services:
     command: ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
     environment:
       - API_BASE_URL=http://nginx:80
-      - API_KEY=${API_KEY:-sc-key-secret-2026}
+      - API_KEY=${API_KEY:?Set API_KEY in .env.prod before production deployment}
     depends_on:
       - api1
       - api2

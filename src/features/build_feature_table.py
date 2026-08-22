@@ -48,9 +48,10 @@ def build_feature_store(
 
     daily_spine = daily_spine.sort_values(by=["product_id", "region", "date"]).reset_index(drop=True)
 
-    # Compute target_next_day_sales (sales on date t + 1 day for same product & region)
+    # Compute the one-step-ahead target. Rows without a future observation are
+    # removed below instead of being labelled as zero-demand observations.
     grouped = daily_spine.groupby(["product_id", "region"])
-    daily_spine["target_next_day_sales"] = grouped["actual_sales"].shift(-1).fillna(0.0)
+    daily_spine["target_next_day_sales"] = grouped["actual_sales"].shift(-1)
 
     # 3. Compute All 9 Feature Sets
     logger.info("--- Feature Set 1: Velocity ---")
@@ -92,8 +93,9 @@ def build_feature_store(
         feature_store = feature_store.merge(f_df, on=keys, how="left")
 
     # Clean nulls from initial window periods
-    numeric_cols = feature_store.select_dtypes(include=[np.number]).columns
+    numeric_cols = feature_store.select_dtypes(include=[np.number]).columns.drop("target_next_day_sales")
     feature_store[numeric_cols] = feature_store[numeric_cols].fillna(0.0)
+    feature_store = feature_store.dropna(subset=["target_next_day_sales"]).reset_index(drop=True)
 
     # 5. Export to Parquet
     os.makedirs(os.path.dirname(output_file), exist_ok=True)

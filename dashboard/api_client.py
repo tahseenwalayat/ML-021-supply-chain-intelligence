@@ -17,23 +17,12 @@ def get_headers() -> Dict[str, str]:
     }
 
 
-def render_api_error_banner(error_msg: str, endpoint: str = ""):
-    """Renders a prominent, user-friendly error card when the API is unreachable or returns error."""
-    st.error(f"⚠️ **Backend API Error / Connection Issue**")
-    st.markdown(f"""
-    <div style="background-color: #3b1418; border: 1px solid #7f1d1d; border-radius: 8px; padding: 14px; margin-bottom: 15px;">
-        <h4 style="color: #fca5a5; margin-top: 0;">Failed to fetch data from backend</h4>
-        <p style="color: #fecaca; margin-bottom: 8px;"><strong>Target Endpoint:</strong> <code>{endpoint}</code></p>
-        <p style="color: #fecaca; margin-bottom: 8px;"><strong>Error Details:</strong> {error_msg}</p>
-        <hr style="border-color: #991b1b; margin: 10px 0;">
-        <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0;">
-            💡 <strong>Troubleshooting Steps:</strong><br>
-            1. Ensure the FastAPI backend server is running: <code>uvicorn api.main:app --port 8000</code><br>
-            2. Verify the base URL environment variable: <code>API_BASE_URL={API_BASE_URL}</code><br>
-            3. Check that the <code>API_KEY</code> environment variable matches the backend secret.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+def render_api_error_banner(error_msg: str, endpoint: str = "") -> None:
+    """Show one concise request warning without exposing repeated connection traces."""
+    target = f" for `{endpoint}`" if endpoint else ""
+    st.warning(f"Live data is temporarily unavailable{target}. Refresh after the API is running.")
+    with st.expander("Technical details"):
+        st.code(error_msg)
 
 
 def check_api_health() -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
@@ -46,6 +35,24 @@ def check_api_health() -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         return None, f"Health check returned HTTP {resp.status_code}"
     except requests.exceptions.RequestException as e:
         return None, str(e)
+
+
+def backend_is_available() -> bool:
+    """Return whether the dashboard can safely make authenticated API requests."""
+    health_data, _ = check_api_health()
+    return bool(health_data and health_data.get("status") == "healthy")
+
+
+def require_backend() -> bool:
+    """Stop a data page early when the API is offline, avoiding cascading errors."""
+    if backend_is_available():
+        return True
+
+    st.info(
+        "Live dashboard data is waiting for the local API. Start the platform with "
+        "`start_app.bat`, then refresh this page."
+    )
+    return False
 
 
 def get_inventory_health() -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
@@ -181,6 +188,23 @@ def detect_degradation(baseline_wmape: float, current_wmape: float) -> Tuple[Opt
     try:
         resp = requests.post(url, headers=get_headers(), json=payload, timeout=REQUEST_TIMEOUT)
         if resp.status_code == 200:
+            return resp.json(), None
+        return None, f"HTTP {resp.status_code}: {resp.text}"
+    except requests.exceptions.RequestException as e:
+        return None, f"Connection error calling {url}: {str(e)}"
+
+
+def start_retraining(hierarchy_level: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Queues the authenticated background retraining workflow."""
+    url = f"{API_BASE_URL}/api/v1/mlops/retrain"
+    try:
+        resp = requests.post(
+            url,
+            headers=get_headers(),
+            json={"hierarchy_level": hierarchy_level},
+            timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code == 202:
             return resp.json(), None
         return None, f"HTTP {resp.status_code}: {resp.text}"
     except requests.exceptions.RequestException as e:

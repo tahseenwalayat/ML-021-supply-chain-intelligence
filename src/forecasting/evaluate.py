@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 from datetime import timedelta
 from typing import Dict, Any, List, Tuple
-import mlflow
-from mlflow.tracking import MlflowClient
 
 from src.utils.logging_config import get_logger
 from src.forecasting.dataset_split import (
@@ -19,8 +17,11 @@ logger = get_logger("forecasting.evaluate")
 
 def define_holdout_window(df: pd.DataFrame, date_col: str = "date", holdout_days: int = 28) -> Tuple[pd.DataFrame, pd.Timestamp, pd.Timestamp]:
     """
-    Extracts a strictly held-out time window of `holdout_days` (28 days) from the dataset.
-    This period was never seen during expanding-window CV or hyperparameter search.
+    Extracts the final `holdout_days` (28-day) time window from the dataset.
+
+    Callers must fit an evaluation model only on rows before this window for
+    the result to be a strictly held-out metric. This helper only defines the
+    temporal boundary.
     """
     df_copy = df.copy()
     df_copy[date_col] = pd.to_datetime(df_copy[date_col])
@@ -94,6 +95,13 @@ def evaluate_model_file(
     # 1. Prepare hierarchy data & extract holdout window
     level_df = prepare_hierarchy_data(feature_df, product_dim, level=level)
     holdout_df, h_start, h_end = define_holdout_window(level_df, date_col="date", holdout_days=28)
+    # Tree models forecast the label stored in their artifact. Current
+    # artifacts forecast the next day's demand; older artifacts forecast the
+    # same-day value. Evaluation must use the same label, otherwise WMAPE
+    # compares predictions and actuals from different calendar days.
+    target_col = artifact.get("target_col", "actual_sales")
+    if target_col not in holdout_df.columns:
+        raise ValueError(f"Evaluation target '{target_col}' is missing from the feature store.")
     
     # 2. Check if model is Prophet dictionary or GBDT regressor
     if "top_n_models" in artifact:
@@ -141,7 +149,7 @@ def evaluate_model_file(
         eval_df["y_pred"] = np.clip(preds, 0.0, None)
 
     # 3. Compute overall and segment metrics
-    y_true = eval_df["actual_sales"].values
+    y_true = eval_df[target_col].values
     y_pred = eval_df["y_pred"].values
     
     overall_metrics = evaluate_forecasts(y_true, y_pred)
@@ -149,7 +157,7 @@ def evaluate_model_file(
     segment_masks = get_segment_masks(eval_df)
     segment_results = {}
     for seg_name, mask in segment_masks.items():
-        sub_true = eval_df.loc[mask, "actual_sales"].values
+        sub_true = eval_df.loc[mask, target_col].values
         sub_pred = eval_df.loc[mask, "y_pred"].values
         if len(sub_true) > 0:
             segment_results[seg_name] = evaluate_forecasts(sub_true, sub_pred)
@@ -178,6 +186,9 @@ def register_staging_models(best_models_by_level: Dict[str, Dict[str, Any]]) -> 
     Registers the best model per hierarchy level in the MLflow Model Registry
     and sets the 'staging' alias.
     """
+    import mlflow
+    from mlflow.tracking import MlflowClient
+
     os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("Model_Registry_Evaluation")

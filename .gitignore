@@ -1,4 +1,4 @@
-# Data files (Exclude raw and interim data except .gitkeep)
+﻿# Data files (Exclude raw and interim data except .gitkeep)
 data/raw/*
 !data/raw/.gitkeep
 data/interim/*
@@ -19,6 +19,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 
 # Machine Learning Models and Artifacts
@@ -38,3 +39,4 @@ mlflow.db
 .idea/
 .DS_Store
 Thumbs.db
+.env.prod

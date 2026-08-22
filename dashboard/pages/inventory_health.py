@@ -7,12 +7,9 @@ import plotly.express as px
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Inventory Health & Working Capital",
-    page_icon="📦",
-    layout="wide"
-)
+configure_page("Inventory health", "📦")
 
 st.markdown("""
 <style>
@@ -35,6 +32,9 @@ st.markdown("""
 
 st.title("📦 Inventory Health & Capital Optimization")
 st.caption("Monitoring stockout exposure, safety stock breaches, dead stock risks, and tied-up working capital")
+
+if not api_client.require_backend():
+    st.stop()
 
 # Fetch inventory health & recommendations from API
 health_res, error_health = api_client.get_inventory_health()
@@ -85,12 +85,12 @@ else:
         </div>
         """, unsafe_allow_html=True)
     with col5:
-        val_usd = summary.get('total_inventory_value_usd', 0.0)
+        total_on_hand = df_rec["current_stock"].sum() if not df_rec.empty else 0.0
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Tied-Up Working Capital</div>
-            <div class="metric-value">${val_usd/1e3:.1f}k</div>
-            <div class="metric-delta delta-amber">Total Stock Valuation</div>
+            <div class="metric-title">Total On-Hand Units</div>
+            <div class="metric-value">{total_on_hand:,.0f}</div>
+            <div class="metric-delta delta-amber">Cost data not supplied by API</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -117,16 +117,15 @@ else:
             st.json(dead_res)
 
     with f_col2:
-        st.subheader("Inventory Stock Valuation Distribution by Region")
+        st.subheader("Inventory Units Distribution by Region")
         if not df_rec.empty:
-            df_rec["inventory_value"] = df_rec["current_stock"] * df_rec["unit_cost"]
             fig_bar = px.bar(
                 df_rec,
                 x="region",
-                y="inventory_value",
+                y="current_stock",
                 color="procurement_status",
-                title="Tied-up Capital ($) by Region and Procurement Status",
-                color_discrete_map={"REORDER_REQUIRED": "#ef4444", "HEALTHY": "#10b981", "OVERSTOCKED": "#f97316"},
+                title="On-Hand Units by Region and Procurement Status",
+                color_discrete_map={"REORDER_REQUIRED": "#ef4444", "STOCK_ADEQUATE": "#10b981"},
                 template="plotly_dark",
                 height=380
             )
@@ -138,6 +137,6 @@ else:
     st.subheader("Inventory Recommendations & Health Status (Live Data)")
     if not df_rec.empty:
         st.dataframe(
-            df_rec[["product_id", "warehouse_id", "region", "current_stock", "reorder_point", "safety_stock", "procurement_status", "unit_cost"]],
+            df_rec[["product_id", "warehouse_id", "region", "allocated_daily_demand", "current_stock", "on_order", "reorder_point", "safety_stock", "recommended_procurement_qty", "procurement_status"]],
             use_container_width=True
         )

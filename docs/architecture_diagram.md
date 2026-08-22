@@ -126,7 +126,7 @@ flowchart TD
   6. Macroeconomic Demand Surge (`demand_surge.py`)
 
 ### 6. REST API Service Layer & High Availability (`api/`, `src/api/`, `nginx/`)
-- **FastAPI Application** (`api/main.py`): Exposes RESTful endpoints organized into 5 domain routers (`risk_router.py`, `inventory_router.py`, `simulation_router.py`, `mlops_router.py`, `alerts_router.py`).
+- **FastAPI Application** (`api/main.py`): Exposes RESTful endpoints organized into 6 domain routers (`forecast_router.py`, `risk_router.py`, `inventory_router.py`, `simulation_router.py`, `mlops_router.py`, `alerts_router.py`).
 - **Security Middleware** (`auth.py`): Enforces `X-API-Key` authentication headers across protected routes.
 - **HA Scaling** (`nginx/nginx.conf`, `docker-compose.prod.yml`): NGINX load balancer distributes incoming HTTP traffic across a pool of 3 API container replicas (`api1`, `api2`, `api3`).
 

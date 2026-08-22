@@ -7,12 +7,9 @@ import plotly.express as px
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Procurement Recommendations",
-    page_icon="🛒",
-    layout="wide"
-)
+configure_page("Procurement", "🛒")
 
 st.markdown("""
 <style>
@@ -36,6 +33,9 @@ st.markdown("""
 st.title("🛒 Procurement & Inventory Replenishment Recommendations")
 st.caption("Safety Stock (SS), Reorder Points (ROP), Economic Order Quantity (EOQ), and Supplier Delay Risk")
 
+if not api_client.require_backend():
+    st.stop()
+
 # Fetch procurement recommendations from API
 rec_res, error_rec = api_client.get_inventory_recommendations()
 
@@ -45,10 +45,15 @@ else:
     recommendations = rec_res.get("recommendations", [])
     df_rec = pd.DataFrame(recommendations)
 
-    # Filter for reorders
-    df_reorder = df_rec[df_rec["procurement_status"] == "REORDER_REQUIRED"] if not df_rec.empty else pd.DataFrame()
+    # The API provides a replenishment quantity rather than a monetary unit cost.
+    df_reorder = (
+        df_rec[df_rec["recommended_procurement_qty"] > 0]
+        if not df_rec.empty else pd.DataFrame()
+    )
     reorder_cnt = len(df_reorder)
-    total_val = (df_reorder["reorder_quantity"] * df_reorder["unit_cost"]).sum() if not df_reorder.empty else 0.0
+    total_replenishment_units = (
+        df_reorder["recommended_procurement_qty"].sum() if not df_reorder.empty else 0.0
+    )
 
     # Overview Scorecards
     col1, col2, col3, col4 = st.columns(4)
@@ -63,18 +68,18 @@ else:
     with col2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Total PO Commitment</div>
-            <div class="metric-value">${total_val:,.2f}</div>
-            <div class="metric-delta delta-amber">Estimated Procurement Budget</div>
+            <div class="metric-title">Recommended Replenishment</div>
+            <div class="metric-value">{total_replenishment_units:,.0f} units</div>
+            <div class="metric-delta delta-amber">Unit costs are not supplied by the API</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
-        avg_rel = df_rec["supplier_reliability_score"].mean() if not df_rec.empty and "supplier_reliability_score" in df_rec.columns else 0.85
+        avg_lead_time = df_rec["avg_lead_time"].mean() if not df_rec.empty else 0.0
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Avg Supplier Reliability</div>
-            <div class="metric-value">{avg_rel:.2f}</div>
-            <div class="metric-delta delta-green">On-Time Performance</div>
+            <div class="metric-title">Average Lead Time</div>
+            <div class="metric-value">{avg_lead_time:.1f} days</div>
+            <div class="metric-delta delta-green">Supplier planning input</div>
         </div>
         """, unsafe_allow_html=True)
     with col4:
@@ -131,11 +136,13 @@ else:
 
     # Detailed Table
     st.subheader("Prioritized Replenishment Action Items (API Live Data)")
-    filter_status = st.multiselect("Filter Procurement Status", options=["REORDER_REQUIRED", "HEALTHY", "OVERSTOCKED"], default=["REORDER_REQUIRED"])
+    available_statuses = sorted(df_rec["procurement_status"].dropna().unique()) if not df_rec.empty else []
+    default_statuses = ["REORDER_REQUIRED"] if "REORDER_REQUIRED" in available_statuses else available_statuses
+    filter_status = st.multiselect("Filter Procurement Status", options=available_statuses, default=default_statuses)
     
     if not df_rec.empty:
         df_show = df_rec[df_rec["procurement_status"].isin(filter_status)]
         st.dataframe(
-            df_show[["product_id", "warehouse_id", "current_stock", "reorder_point", "safety_stock", "reorder_quantity", "unit_cost", "procurement_status"]],
+            df_show[["product_id", "warehouse_id", "allocated_daily_demand", "current_stock", "on_order", "reorder_point", "safety_stock", "eoq", "recommended_procurement_qty", "procurement_status"]],
             use_container_width=True
         )

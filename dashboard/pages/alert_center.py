@@ -5,12 +5,9 @@ import pandas as pd
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Operational Alert Center",
-    page_icon="🚨",
-    layout="wide"
-)
+configure_page("Alert center", "🚨")
 
 st.markdown("""
 <style>
@@ -73,6 +70,9 @@ st.markdown("""
 st.title("🚨 Operational Alert & Event Monitoring Center")
 st.caption("Prioritized warning feed sourced from Risk Engine API (6 Operational Alert Types)")
 
+if not api_client.require_backend():
+    st.stop()
+
 # Fetch recommendations data from API to construct scan payload
 rec_res, error_rec = api_client.get_inventory_recommendations()
 
@@ -85,7 +85,7 @@ else:
     # Format items for batch scanning
     items_payload = []
     if not df_rec.empty:
-        for idx, row in df_rec.iterrows():
+        for idx, row in df_rec.head(250).iterrows():
             items_payload.append({
                 "product_id": str(row.get("product_id", f"SKU-{idx}")),
                 "warehouse_id": str(row.get("warehouse_id", "WH-EAST-1")),
@@ -94,7 +94,7 @@ else:
                 "current_stock": float(row.get("current_stock", 50.0)),
                 "reorder_point": float(row.get("reorder_point", 100.0)),
                 "safety_stock": float(row.get("safety_stock", 30.0)),
-                "avg_daily_demand": float(row.get("avg_daily_demand", 10.0)),
+                "avg_daily_demand": float(row.get("allocated_daily_demand", 10.0)),
                 "avg_lead_time": float(row.get("avg_lead_time", 7.0)),
                 "lead_time_std_days": float(row.get("lead_time_std_days", 2.0)),
                 "supplier_reliability_score": float(row.get("supplier_reliability_score", 0.85)),

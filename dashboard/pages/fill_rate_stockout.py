@@ -8,12 +8,9 @@ import plotly.graph_objects as go
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Fill Rate & Stockout Probability",
-    page_icon="📈",
-    layout="wide"
-)
+configure_page("Fill rate and stockout", "⚠️")
 
 st.markdown("""
 <style>
@@ -36,6 +33,9 @@ st.markdown("""
 
 st.title("📈 Service Fill Rate & Stockout Probability Engine")
 st.caption("Evaluating service fill rate %, stockout probability distributions, and lead time supply shocks")
+
+if not api_client.require_backend():
+    st.stop()
 
 # Fetch inventory recommendations to evaluate stockouts
 rec_res, error_rec = api_client.get_inventory_recommendations()
@@ -150,6 +150,6 @@ else:
     st.subheader("SKU Stockout Risk Breakdown")
     if not df_rec.empty:
         st.dataframe(
-            df_rec[["product_id", "warehouse_id", "current_stock", "reorder_point", "safety_stock", "avg_daily_demand", "procurement_status"]],
+            df_rec[["product_id", "warehouse_id", "current_stock", "reorder_point", "safety_stock", "allocated_daily_demand", "procurement_status"]],
             use_container_width=True
         )

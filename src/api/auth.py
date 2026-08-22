@@ -1,8 +1,13 @@
 import os
 from fastapi import Header, HTTPException, Depends
 
-# Default Test Key from api_spec.md
-API_KEY_SECRET = os.getenv("API_KEY", "sc-key-secret-2026")
+# The fallback is restricted to local development so production deployments fail
+# closed if an operator forgets to configure a secret.
+DEFAULT_DEVELOPMENT_API_KEY = "sc-key-secret-2026"
+API_KEY_SECRET = os.getenv("API_KEY", DEFAULT_DEVELOPMENT_API_KEY)
+_is_placeholder_key = API_KEY_SECRET == DEFAULT_DEVELOPMENT_API_KEY or API_KEY_SECRET.lower().startswith("replace_")
+if os.getenv("ENVIRONMENT", "development").lower() == "production" and _is_placeholder_key:
+    raise RuntimeError("API_KEY must be set to a non-default secret in production.")
 
 def verify_api_key(x_api_key: str = Header(...)):
     """

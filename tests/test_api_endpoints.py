@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 
-client = TestClient(app)
+client = TestClient(app, headers={"X-API-Key": "sc-key-secret-2026"})
 
 
 def test_health_check():
@@ -11,6 +11,15 @@ def test_health_check():
     data = response.json()
     assert data["status"] == "healthy"
     assert "scenario_simulation" in data["modules"]
+
+
+def test_decisioning_routes_require_api_key():
+    unauthenticated_client = TestClient(app)
+    response = unauthenticated_client.post(
+        "/api/v1/risk/stockout",
+        json={"current_stock": 0.0, "reorder_point": 50.0, "safety_stock": 20.0},
+    )
+    assert response.status_code == 422
 
 
 def test_api_supplier_delay():

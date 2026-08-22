@@ -100,12 +100,13 @@ Unified Feature Store (1,112,929 rows x 54 features)
 
 ### Model Accuracy Metrics Across Hierarchy Levels
 
+> **Validation status:** these historical figures were produced before the target was corrected to next-day demand. Retraining and target-aligned holdout evaluation are required before presenting any model as accepted.
+
 | Hierarchy Level | Model Algorithm | WMAPE (%) | MAE (Units) | RMSE (Units) | Seasonal Naive WMAPE | Error Reduction |
 |---|---|---|---|---|---|---|
-| **SKU-Region** | LightGBM | **12.4%** | 3.12 | 4.85 | 24.8% | **50.0%** |
-| **SKU-Region** | XGBoost | 13.1% | 3.35 | 5.12 | 24.8% | 47.2% |
-| **Category-Region** | LightGBM | **9.1%** | 12.45 | 18.30 | 18.5% | 50.8% |
-| **Region-Total** | Prophet / GBDT | **6.8%** | 45.20 | 62.10 | 14.2% | 52.1% |
+| **SKU-Region** | LightGBM / XGBoost | Pending retraining | Pending | Pending | Pending | Pending |
+| **Category-Region** | LightGBM / XGBoost | Pending retraining | Pending | Pending | Pending | Pending |
+| **Region-Total** | LightGBM / XGBoost / Prophet | Pending retraining | Pending | Pending | Pending | Pending |
 
 ### Feature Importance & SHAP Explainability
 SHAP value analysis (`src/forecasting/explainability.py`) identifies **Lag 7 Sales Velocity**, **Promotion Discount Depth**, **Price Elasticity**, and **Lead Time Standard Deviation** as the primary drivers of demand variance.
@@ -155,7 +156,8 @@ Scenario Stress Testing Sandbox
 ## 🔌 Slide 8: API-First REST Architecture & High-Availability Scaling
 
 ### RESTful Services (`api/main.py` & `src/api/`)
-Protected by `X-API-Key` authentication middleware (`auth.py`) across 5 dedicated domain routers:
+Protected by `X-API-Key` authentication middleware (`auth.py`) across 6 dedicated domain routers:
+- `/api/v1/forecast`: one-step-ahead daily demand forecast; weekly and monthly figures are explicit extrapolations until multi-horizon models are trained.
 - `/api/v1/risk`: 5D risk evaluation, single SKU scorecards, batch risk scoring.
 - `/api/v1/inventory`: Optimized recommendations, inventory health KPIs, warehouse capacity.
 - `/api/v1/simulation`: Interactive scenario stress testing.

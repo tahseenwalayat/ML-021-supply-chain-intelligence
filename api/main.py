@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from src.api.auth import verify_api_key
 from src.api.risk_router import router as risk_router
 from src.api.simulation_router import router as simulation_router
 from src.api.mlops_router import router as mlops_router
 from src.api.alerts_router import router as alerts_router
 from src.api.inventory_router import router as inventory_router
+from src.api.forecast_router import router as forecast_router
 
 app = FastAPI(
     title="Enterprise Supply Chain Demand Forecasting & Risk Intelligence API",
@@ -11,11 +13,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.include_router(risk_router)
-app.include_router(simulation_router)
-app.include_router(mlops_router)
-app.include_router(alerts_router)
-app.include_router(inventory_router)
+# Keep /health public for orchestration probes. Every decisioning and data route
+# requires the configured X-API-Key.
+secured_router_dependencies = [Depends(verify_api_key)]
+app.include_router(risk_router, dependencies=secured_router_dependencies)
+app.include_router(simulation_router, dependencies=secured_router_dependencies)
+app.include_router(mlops_router, dependencies=secured_router_dependencies)
+app.include_router(alerts_router, dependencies=secured_router_dependencies)
+app.include_router(inventory_router, dependencies=secured_router_dependencies)
+app.include_router(forecast_router, dependencies=secured_router_dependencies)
 
 
 @app.get("/health")
@@ -38,4 +44,3 @@ def health_check():
             "inventory_optimization"
         ]
     }
-

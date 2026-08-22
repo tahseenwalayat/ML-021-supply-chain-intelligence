@@ -7,12 +7,9 @@ import plotly.graph_objects as go
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import api_client
+from ui import configure_page
 
-st.set_page_config(
-    page_title="Warehouse Utilization",
-    page_icon="🏭",
-    layout="wide"
-)
+configure_page("Warehouse utilization", "🏭")
 
 st.markdown("""
 <style>
@@ -35,6 +32,9 @@ st.markdown("""
 
 st.title("🏭 Warehouse Capacity Utilization & Operational Risk")
 st.caption("Monitoring facility fill levels, storage constraints, and capacity breach thresholds")
+
+if not api_client.require_backend():
+    st.stop()
 
 # Fetch warehouse utilization from API
 util_res, error_util = api_client.get_warehouse_utilization()
